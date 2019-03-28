@@ -1,0 +1,69 @@
+---
+title: "team"
+output: html_document
+---
+
+```{r}
+```{r}
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(ggplot2)
+
+defense <- read_excel('cyclonesFootball2018.xlsx', sheet='Defensive')
+offense <- read_excel('cyclonesFootball2018.xlsx', sheet='Offensive')
+biography <- read_excel('cyclonesFootball2018.xlsx', sheet = 'Biography')
+
+```
+
+Part 1: Cleaning the Data
+```{r}
+defClean <- defense %>% mutate(Name = factor(Name), Opponent_Opponent = factor(Opponent_Opponent)) %>% mutate_at(vars(starts_with("Tack")), list(as.numeric)) %>% mutate_at(vars(starts_with("Turn")), list(as.numeric)) %>% mutate_at(vars(starts_with("Pass")), list(as.numeric))
+
+offClean <- offense %>% mutate(Name = factor(Name), Opponent_Opponent = factor(Opponent_Opponent)) %>% mutate_at(vars(starts_with("Rece")), list(as.numeric)) %>% mutate_at(vars(starts_with("Rush")), list(as.numeric)) %>% mutate_at(vars(starts_with("Pass")), list(as.numeric))
+
+bioClean <- biography %>% mutate(Name = factor(Name)) %>% mutate_at(vars(starts_with("Weight")), list(as.numeric))
+
+str(defClean)
+str(offClean)
+str(bioClean)
+```
+
+Part 2: Tidying(1)
+```{r}
+#1
+defClean <- defClean %>% gather(key = Statistic, value = Count, 3:11)
+
+ggplot(defClean, aes(x=Count)) + geom_histogram(stat = 'count') + facet_wrap(~Statistic)
+
+# Fumble recoveries, forced fumbles, and interceptions are the most rare since most of their values are at 0
+
+#2
+
+```
+
+Part 2: Tidying(2)
+```{r}
+#1 
+#a
+
+#2
+#b
+```
+
+Part 3: Joining Data Frames
+```{r}
+#1
+x <- inner_join(bioClean, offClean %>% group_by(Name) %>% summarize(total_receiving_yds = sum(Receiving_YDS)), by = 'Name')
+
+#2 
+ggplot(x, aes(x = Weight, y = total_receiving_yds)) + geom_point()
+# There is no visible relationship between receiving yards and weight.
+
+#3 Does the position a player plays affect how many receiving yards they get?
+ggplot(x, aes(x = Position, y = total_receiving_yds)) + geom_bar(stat = 'identity')
+# The plot shows that wide receivers tend to get the majority of the receiving yards, followed by the tight ends and then the running backs. Quarterbacks didn't get any receiving yards because they were the ones throwing the ball.
+
+```
+```
+
