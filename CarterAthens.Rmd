@@ -1,0 +1,71 @@
+---
+title: "CarterAthens"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+defense <- read_excel('cyclonesFootball2018.xlsx', sheet='Defensive')
+offense <- read_excel('cyclonesFootball2018.xlsx', sheet='Offensive')
+biography <- read_excel('cyclonesFootball2018.xlsx', sheet='Biography')
+str(defense)
+```
+
+Part one: Cleaning data
+```{r}
+defClean <- defense %>% mutate(Name = factor(Name), Opponent_Opponent = factor(Opponent_Opponent)) %>% mutate_at(vars(starts_with("Tack")), list(as.numeric)) %>% mutate_at(vars(starts_with("Turn")), list(as.numeric)) %>% mutate_at(vars(starts_with("Pass")), list(as.numeric))
+
+offClean <- offense %>% mutate(Name = factor(Name), Opponent_Opponent = factor(Opponent_Opponent)) %>% mutate_at(vars(starts_with("Rece")), list(as.numeric)) %>% mutate_at(vars(starts_with("Rush")), list(as.numeric)) %>% mutate_at(vars(starts_with("Pass")), list(as.numeric))
+
+bioClean <- biography %>% mutate(Name = factor(Name)) %>% mutate_at(vars(starts_with("Weight")), list(as.numeric))
+
+str(defClean)
+str(offClean)
+str(bioClean)
+```
+
+
+Part two: Tidying(1)
+```{r}
+#1
+defClean <- defClean %>% gather(key = Statistic, value = Count, 3:11)
+
+ggplot(defClean, aes(x=Count)) + geom_histogram(stat = 'count') + facet_wrap(~Statistic)
+
+# Fumble recoveries, forced fumbles, and interceptions are the most rare since most of their values are at 0
+
+#2
+wvks <- defClean %>% filter(Opponent_Opponent %in% c('West Virginia', 'Kansas State')) %>% filter(Statistic %in% 'Tackles_Solo') %>% spread(key = Opponent_Opponent, value = Count)
+#ggplot(wvks, aes(x = wvks$West Virginia, y = wvks$Kansas State)) + geom_point() + ylab('Kansas State Solo Tackles') + xlab('West Virginia Solo Tackles')
+```
+
+Part two: Tidying(2)
+```{r}
+#1 
+#a
+bioClean <- separate(data = bioClean, col = 'Hometown', into = c('City', 'State'), sep = ',')
+
+#2
+#b
+number <- bioClean %>% group_by(State) %>% summarize(n = n())
+```
+
+
+Part 3
+```{r}
+#1
+x <- inner_join(bioClean, offClean %>% group_by(Name) %>% summarize(total_receiving_yds = sum(Receiving_YDS)), by = 'Name')
+
+#2 
+ggplot(x, aes(x = Weight, y = total_receiving_yds)) + geom_point()
+# There is no visible relationship between receiving yards and weight.
+
+
+```

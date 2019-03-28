@@ -4,7 +4,6 @@ output: html_document
 ---
 
 ```{r}
-```{r}
 library(dplyr)
 library(tidyr)
 library(readxl)
@@ -39,16 +38,20 @@ ggplot(defClean, aes(x=Count)) + geom_histogram(stat = 'count') + facet_wrap(~St
 # Fumble recoveries, forced fumbles, and interceptions are the most rare since most of their values are at 0
 
 #2
-
+wvks <- defClean %>% filter(Opponent_Opponent %in% c('West Virginia', 'Kansas State')) %>% filter(Statistic %in% 'Tackles_Solo') %>% spread(key = Opponent_Opponent, value = Count)
+#ggplot(wvks, aes(x = wvks$West Virginia, y = wvks$Kansas State)) + geom_point() + ylab('Kansas State Solo Tackles') + xlab('West Virginia Solo Tackles')
 ```
 
 Part 2: Tidying(2)
 ```{r}
 #1 
 #a
+bioClean <- separate(data = bioClean, col = 'Hometown', into = c('City', 'State'), sep = ',')
 
 #2
 #b
+number <- bioClean %>% group_by(State) %>% summarize(n = n())
+
 ```
 
 Part 3: Joining Data Frames
